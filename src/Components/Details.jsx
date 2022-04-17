@@ -48,6 +48,7 @@ function Details() {
 			name: (value) =>
 				value.length < 2 ? 'Name must be at least 2 characters' : null,
 			phone: (value) =>
+				// eslint-disable-next-line no-useless-escape
 				/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/.test(value)
 					? null
 					: 'Invalid phone number',
