@@ -21,7 +21,15 @@ import { MdDelete } from 'react-icons/md';
 import baseURL from '../api';
 import { useModals } from '@mantine/modals';
 
-function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
+function ContactCard({
+	address,
+	dob,
+	phoneNumber,
+	email,
+	name,
+	id,
+	handleRefresh,
+}) {
 	const { classes } = useStyles();
 	const navigate = useNavigate();
 	const modals = useModals();
@@ -36,6 +44,7 @@ function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
 					timeout: 5000,
 					color: 'green',
 				});
+				handleRefresh();
 			})
 			.catch((err) => {
 				showNotification({
@@ -58,7 +67,6 @@ function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
 			),
 			labels: { confirm: 'Confirm', cancel: 'Cancel' },
 			confirmProps: { color: 'red' },
-			onCancel: () => console.log('Cancel'),
 			onConfirm: confirmDelete,
 		});
 
@@ -70,7 +78,7 @@ function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
 			className={classes.paper}
 			onClick={() =>
 				navigate(`/contacts/${id}`, {
-					state: { name, dob, address, email, id, phone: phoneNumber, rest },
+					state: { name, dob, address, email, id, phone: phoneNumber },
 				})
 			}
 		>
@@ -100,6 +108,7 @@ function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
 			<Avatar color='cyan' radius='xl'>
 				{name
 					.split(' ')
+					.splice(0, 2)
 					.map((name) => name[0])
 					.join('')
 					.toUpperCase()}
@@ -115,20 +124,22 @@ function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
 				</div>
 				<div className={classes.items}>
 					<MdOutlineAlternateEmail />
-					<Text variant='link'>{email}</Text>
+					<Text variant='link'>{email || '-'}</Text>
 				</div>
 				<div className={classes.items}>
 					<BsHouseFill />
-					<Text>{address}</Text>
+					<Text>{address || '-'}</Text>
 				</div>
 				<div className={classes.items}>
 					<FaBirthdayCake />
 					<Text>
-						{new Date(dob).toLocaleDateString('en', {
-							month: 'short',
-							day: 'numeric',
-							year: 'numeric',
-						})}
+						{dob
+							? new Date(dob).toLocaleDateString('en', {
+									month: 'short',
+									day: 'numeric',
+									year: 'numeric',
+							  })
+							: '-'}
 					</Text>
 				</div>
 			</div>

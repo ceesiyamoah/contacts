@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import useStyles from '../styles';
 import Header from '../Components/Header';
 import { Modal, Button, TextInput, Box, Textarea, Group } from '@mantine/core';
@@ -9,12 +9,11 @@ import { useForm } from '@mantine/form';
 import baseURL from '../api';
 import { showNotification } from '@mantine/notifications';
 import { groupNamesByFirstLetter } from '../utils';
-import { useDebouncedValue } from '@mantine/hooks';
+import { BsFillXCircleFill } from 'react-icons/bs';
 
 function Home() {
 	const [addModalOpen, setAddModalOpen] = useState(false);
 	const [search, setSearch] = useState('');
-	// const [searchDebouncd] = useDebouncedValue(search, 300);
 	const [contacts, setContacts] = useState([]);
 
 	const { classes } = useStyles();
@@ -34,7 +33,7 @@ function Home() {
 					? null
 					: 'Invalid phone number',
 			email: (value) =>
-				value && /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/.test(value)
+				!value || /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/.test(value)
 					? null
 					: 'Invalid email',
 			address: (value) =>
@@ -55,58 +54,74 @@ function Home() {
 		};
 		baseURL
 			.post('/', body)
-			.then((res) => {
+			.then(() => {
 				showNotification({
-					message: 'Contact Added',
-					variant: 'success',
+					title: 'Contact Added',
+					message: 'Contact has been added',
+					timeout: 5000,
+					color: 'green',
 				});
+				getData();
 				setAddModalOpen(false);
 				addNewContactForm.reset();
 			})
 			.catch((err) => {
 				showNotification({
-					message: 'Error Adding Contact',
-					variant: 'error',
+					title: 'An Error occured',
+					message: 'Contact could not be created',
+					timeout: 5000,
+					color: 'red',
 				});
 			});
 	};
 
-	useEffect(() => {
-		baseURL
-			.get('/')
-			.then(({ data }) => {
-				console.log(data);
-				if (!data.length) {
+	const getData = useCallback((search) => {
+		const getContacts = () => {
+			const params = {};
+			if (search) {
+				params.search = search;
+			}
+			setContacts([]);
+			baseURL
+				.get('/', {
+					params,
+				})
+				.then(({ data }) => {
+					if (!data.length) {
+						showNotification({
+							title: 'No contacts found',
+							autoClose: 5000,
+							message: 'Please add a contact',
+							color: 'red',
+						});
+					}
+					const modData = groupNamesByFirstLetter(data);
+					setContacts(modData);
+				})
+				.catch((err) => {
+					setContacts([]);
 					showNotification({
-						title: 'No contacts found',
+						message: 'There was an issue fetching the contacts',
 						autoClose: 5000,
-						message: 'Please add a contact',
+						title: 'Error loading contacts',
 						color: 'red',
 					});
-				}
-				const modData = groupNamesByFirstLetter(data);
-				console.log(modData);
-				setContacts(modData);
-			})
-			.catch((err) => {
-				setContacts([]);
-				showNotification({
-					message: 'There was an issue fetching the contacts',
-					autoClose: 5000,
-					title: 'Error loading contacts',
-					color: 'red',
 				});
-			});
+		};
+		getContacts();
 	}, []);
+
+	useEffect(() => {
+		getData();
+	}, [getData]);
 
 	const openAddModal = () => {
 		setAddModalOpen(true);
 		addNewContactForm.reset();
 	};
 
-	const onSearch = (e) => {
-		setSearch(e.target.value);
-		// console.log(searchDebouncd);
+	const handleSearch = () => {
+		getData(search);
 	};
 
 	return (
@@ -154,22 +169,40 @@ function Home() {
 					</form>
 				</Box>
 			</Modal>
-			<Box style={{ display: 'flex', flexDirection: 'column' }}>
+			<Box
+				style={{
+					display: 'flex',
+					flexDirection: 'column',
+					minHeight: '100vh',
+					height: '100%',
+				}}
+			>
 				<Header buttonAction={openAddModal} />
 				<main className={classes.wrapper}>
-					<TextInput
-						size='md'
-						placeholder='Search for contact'
-						icon={<BsSearch />}
-						onChange={onSearch}
-						rightSection={<Button style={{ height: '80%' }}>Submit</Button>}
-						rightSectionWidth={100}
-					/>
+					<form onSubmit={(e) => e.preventDefault()}>
+						<TextInput
+							size='md'
+							placeholder='Search for contact'
+							icon={<BsSearch />}
+							onChange={(e) => setSearch(e.target.value)}
+							rightSection={
+								<Button
+									style={{ height: '80%' }}
+									type='submit'
+									onClick={handleSearch}
+								>
+									Submit
+								</Button>
+							}
+							rightSectionWidth={100}
+						/>
+					</form>
 					{contacts.map((group) => (
 						<AlphaGroup
 							key={group.group}
 							letter={group.group}
 							contacts={group.children}
+							handleRefresh={() => getData()}
 						/>
 					))}
 				</main>

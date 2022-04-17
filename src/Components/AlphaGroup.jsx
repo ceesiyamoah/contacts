@@ -3,7 +3,7 @@ import { Text } from '@mantine/core';
 import useStyles from '../styles';
 import ContactCard from './ContactCard';
 
-function AlphaGroup({ letter, contacts }) {
+function AlphaGroup({ letter, contacts, handleRefresh }) {
 	const { classes } = useStyles();
 	const letterRef = useRef();
 	const [highlight, setHighlight] = useState(false);
@@ -31,7 +31,11 @@ function AlphaGroup({ letter, contacts }) {
 			</Text>
 			<div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
 				{contacts.map((contact) => (
-					<ContactCard key={contact.id} {...contact} />
+					<ContactCard
+						key={contact.id}
+						{...contact}
+						handleRefresh={handleRefresh}
+					/>
 				))}
 			</div>
 		</div>

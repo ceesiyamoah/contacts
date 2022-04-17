@@ -8,7 +8,6 @@ import { LoadingOverlay } from '@mantine/core';
 
 function App() {
 	const [loading, setLoading] = useState(false);
-	console.log(loading);
 
 	baseURL.interceptors.request.use((config) => {
 		setLoading(true);

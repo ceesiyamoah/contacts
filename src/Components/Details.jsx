@@ -42,21 +42,17 @@ function Details() {
 			phone,
 			email,
 			address,
-			birthday: new Date(dob),
+			birthday: dob ? new Date(dob) : undefined,
 		},
 		validate: {
-			name: (value) => {
-				console.log(
-					value.length < 2 ? 'Name must be at least 2 characters' : null
-				);
-				return value.length < 2 ? 'Name must be at least 2 characters' : null;
-			},
+			name: (value) =>
+				value.length < 2 ? 'Name must be at least 2 characters' : null,
 			phone: (value) =>
 				/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/.test(value)
 					? null
 					: 'Invalid phone number',
 			email: (value) =>
-				value && /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/.test(value)
+				!value || /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/.test(value)
 					? null
 					: 'Invalid email',
 			address: (value) =>
