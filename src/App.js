@@ -1,15 +1,38 @@
-import { Button, Modal } from '@mantine/core';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
-import Header from './Header';
+import Details from './Components/Details';
 import Home from './pages/Home';
-import useStyles from './styles';
+import baseURL from './api';
+import { LoadingOverlay } from '@mantine/core';
 
 function App() {
-	const [addModalOpen, setAddModalOpen] = useState(false);
-	const { classes } = useStyles();
+	const [loading, setLoading] = useState(false);
+	console.log(loading);
 
-	return <Home />;
+	baseURL.interceptors.request.use((config) => {
+		setLoading(true);
+		config.headers.siisi = 'fsdf';
+		return config;
+	});
+	baseURL.interceptors.response.use((config) => {
+		setLoading(false);
+		return config;
+	});
+
+	return (
+		<BrowserRouter>
+			{
+				<div style={{ width: '100vw', position: 'fixed', height: '100vh' }}>
+					<LoadingOverlay visible={loading} />
+				</div>
+			}
+			<Routes>
+				<Route path='/' element={<Home />} />
+				<Route path='/contacts/:id' element={<Details />} />
+			</Routes>
+		</BrowserRouter>
+	);
 }
 
 export default App;
