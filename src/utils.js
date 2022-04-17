@@ -6,7 +6,7 @@
 const groupNamesByFirstLetter = (data) => {
 	const mod = data.reduce((r, e) => {
 		// get first letter of name of current element
-		let group = e.name[0];
+		let group = e.name[0].toUpperCase();
 		// if there is no property in accumulator with this letter create it
 		if (!r[group]) r[group] = { group, children: [e] };
 		// if there is push current element to children array for that letter

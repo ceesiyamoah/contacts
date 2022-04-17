@@ -19,10 +19,15 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 		alignItems: 'center',
 		position: 'sticky',
 		top: 0,
+		zIndex: 100,
 	},
 	alphatitle: {
 		color: theme.colors.dark[3],
 		marginLeft: '10px',
+		textTransform: 'uppercase',
+		position: 'sticky',
+		top: '60px',
+		zIndex: 10,
 	},
 	paper: {
 		display: 'flex',

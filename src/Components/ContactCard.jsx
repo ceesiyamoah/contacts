@@ -24,19 +24,29 @@ import { useModals } from '@mantine/modals';
 function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
 	const { classes } = useStyles();
 	const navigate = useNavigate();
+	const modals = useModals();
 
 	const confirmDelete = () => {
-		baseURL.delete('/' + id).then((res) => {
-			showNotification({
-				title: 'Contact deleted',
-				message: 'Contact has been deleted',
-				timeout: 5000,
-				color: 'green',
+		baseURL
+			.delete('/' + id)
+			.then((res) => {
+				showNotification({
+					title: 'Contact deleted',
+					message: 'Contact has been deleted',
+					timeout: 5000,
+					color: 'green',
+				});
+			})
+			.catch((err) => {
+				showNotification({
+					title: 'Error',
+					message: err.message,
+					timeout: 5000,
+					color: 'red',
+				});
 			});
-		});
 	};
 
-	const modals = useModals();
 	const Delete = () =>
 		modals.openConfirmModal({
 			title: 'Please confirm your action',
@@ -47,6 +57,7 @@ function ContactCard({ address, dob, phoneNumber, email, name, id, rest }) {
 				</Text>
 			),
 			labels: { confirm: 'Confirm', cancel: 'Cancel' },
+			confirmProps: { color: 'red' },
 			onCancel: () => console.log('Cancel'),
 			onConfirm: confirmDelete,
 		});

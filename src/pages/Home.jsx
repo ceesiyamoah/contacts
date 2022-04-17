@@ -9,9 +9,12 @@ import { useForm } from '@mantine/form';
 import baseURL from '../api';
 import { showNotification } from '@mantine/notifications';
 import { groupNamesByFirstLetter } from '../utils';
+import { useDebouncedValue } from '@mantine/hooks';
 
 function Home() {
 	const [addModalOpen, setAddModalOpen] = useState(false);
+	const [search, setSearch] = useState('');
+	// const [searchDebouncd] = useDebouncedValue(search, 300);
 	const [contacts, setContacts] = useState([]);
 
 	const { classes } = useStyles();
@@ -26,14 +29,22 @@ function Home() {
 		validate: {
 			name: (value) =>
 				value.length < 2 ? 'Name must be at least 2 characters' : null,
+			phone: (value) =>
+				/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$/.test(value)
+					? null
+					: 'Invalid phone number',
+			email: (value) =>
+				value && /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/.test(value)
+					? null
+					: 'Invalid email',
+			address: (value) =>
+				value && value.length < 5 ? 'Invalid address' : null,
 		},
 	});
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		addNewContactForm.validate();
-		console.log(addNewContactForm.values);
-		if (!addNewContactForm.errors) return;
-
+		const { hasErrors } = addNewContactForm.validate();
+		if (hasErrors) return;
 		const { name, phone, email, dob, address } = addNewContactForm.values;
 		const body = {
 			name: name,
@@ -50,6 +61,7 @@ function Home() {
 					variant: 'success',
 				});
 				setAddModalOpen(false);
+				addNewContactForm.reset();
 			})
 			.catch((err) => {
 				showNotification({
@@ -77,7 +89,6 @@ function Home() {
 				setContacts(modData);
 			})
 			.catch((err) => {
-				// setLoading(false);
 				setContacts([]);
 				showNotification({
 					message: 'There was an issue fetching the contacts',
@@ -87,6 +98,16 @@ function Home() {
 				});
 			});
 	}, []);
+
+	const openAddModal = () => {
+		setAddModalOpen(true);
+		addNewContactForm.reset();
+	};
+
+	const onSearch = (e) => {
+		setSearch(e.target.value);
+		// console.log(searchDebouncd);
+	};
 
 	return (
 		<>
@@ -106,12 +127,14 @@ function Home() {
 						<TextInput
 							placeholder='02352342303'
 							required
+							type='tel'
 							label='Phone Number'
 							{...addNewContactForm.getInputProps('phone')}
 						/>
 						<TextInput
 							placeholder='spencer@gmail.com'
 							label='Email'
+							type='email'
 							{...addNewContactForm.getInputProps('email')}
 						/>
 						<Textarea
@@ -122,6 +145,7 @@ function Home() {
 						<DatePicker
 							placeholder='Birthday'
 							label='Birthday'
+							maxDate={new Date()}
 							{...addNewContactForm.getInputProps('birthday')}
 						/>
 						<Group position='right' mt='md'>
@@ -131,12 +155,13 @@ function Home() {
 				</Box>
 			</Modal>
 			<Box style={{ display: 'flex', flexDirection: 'column' }}>
-				<Header buttonAction={() => setAddModalOpen(true)} />
+				<Header buttonAction={openAddModal} />
 				<main className={classes.wrapper}>
 					<TextInput
 						size='md'
 						placeholder='Search for contact'
 						icon={<BsSearch />}
+						onChange={onSearch}
 						rightSection={<Button style={{ height: '80%' }}>Submit</Button>}
 						rightSectionWidth={100}
 					/>
